@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #d7fdd9;
   --purple: #cd6cfd;
   --yellow: #ffe467;
@@ -89,6 +89,44 @@ img {
   background: var(--purple);
 }
 
+.service-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 12px 14px 0;
+  padding: 14px 16px;
+  border: 2px solid rgba(16, 16, 16, 0.9);
+  border-radius: 22px;
+  background: #fff6cf;
+  box-shadow: var(--shadow);
+}
+
+.service-notice-copy {
+  min-width: 0;
+}
+
+.service-notice-copy strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1rem;
+}
+
+.service-notice-copy p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.service-notice-close {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(16, 16, 16, 0.9);
+  background: var(--soft-white);
+}
+
 .icon-button {
   display: inline-flex;
   align-items: center;
@@ -128,6 +166,13 @@ img {
   display: grid;
   width: 100%;
   min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .service-notice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 .page {
