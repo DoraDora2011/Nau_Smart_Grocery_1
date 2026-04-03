@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -32,6 +32,14 @@
         </svg>
       </button>
     </header>
+
+    <section class="service-notice hidden" id="serviceNotice" aria-live="polite">
+      <div class="service-notice-copy">
+        <strong id="serviceNoticeTitle">AI setup required</strong>
+        <p id="serviceNoticeMessage">Add the Gemini API key in Vercel, then redeploy.</p>
+      </div>
+      <button class="service-notice-close" id="serviceNoticeClose" type="button" aria-label="Close setup notice">Close</button>
+    </section>
 
     <main class="page-stack">
       <section class="page active" data-page="home">
