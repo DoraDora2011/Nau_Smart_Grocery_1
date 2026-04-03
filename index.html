@@ -41,6 +41,23 @@
       <button class="service-notice-close" id="serviceNoticeClose" type="button" aria-label="Close setup notice">Close</button>
     </section>
 
+    <div class="chooser-modal hidden" id="chooserModal" aria-hidden="true">
+      <button class="chooser-modal-backdrop" id="chooserModalBackdrop" type="button" aria-label="Close search options"></button>
+      <section class="chooser-modal-card" aria-labelledby="chooserModalTitle">
+        <button class="chooser-modal-close" id="chooserModalClose" type="button" aria-label="Close search options">Close</button>
+        <p class="chooser-modal-eyebrow">Choose how you'd like to get cooking suggestions:</p>
+        <h2 id="chooserModalTitle">Start with a dish name or the ingredients you already have.</h2>
+        <div class="chooser-modal-copy">
+          <p>Dish name: jump straight to a shopping list and recipe flow.</p>
+          <p>Ingredients: browse dishes that fit what is already in your kitchen.</p>
+        </div>
+        <div class="chooser-modal-actions">
+          <button class="chooser-action-button" data-open-search="dish" type="button">Dish name</button>
+          <button class="chooser-action-button" data-open-search="ingredients" type="button">Ingredients</button>
+        </div>
+      </section>
+    </div>
+
     <main class="page-stack">
       <section class="page active" data-page="home">
         <div class="home-top-shell">
@@ -495,6 +512,9 @@
           <article class="ingredient-detail-sheet">
             <h1 id="scanDetailTitle">Suggested dish</h1>
             <div id="scanDetailDescription" class="ingredient-detail-copy"></div>
+            <ul id="scanDetailIngredients" class="scan-detail-list"></ul>
+            <ol id="scanDetailSteps" class="steps scan-detail-steps"></ol>
+            <div id="scanDetailLinks" class="recipe-links scan-detail-links"></div>
 
             <div class="ingredient-detail-cta">
               <button class="ghost-pill-button" id="scanTryOthersButton" type="button">Try others</button>
@@ -577,7 +597,7 @@
       <section class="page" data-page="profile">
         <div class="placeholder-page">
           <h1>Settings</h1>
-          <p>Gemini runs from the Vercel backend for this deployment. Set <code>GEMINI_API_KEY</code> in Project Settings > Environment Variables, then redeploy.</p>
+          <p>This demo now runs from a built-in grocery and recipe library first. If you still want live AI enhancement, set <code>GEMINI_API_KEY</code> in Vercel and redeploy.</p>
         </div>
       </section>
     </main>
@@ -618,6 +638,7 @@
     </nav>
   </div>
 
+  <script src="./js/demo-library.js"></script>
   <script src="./js/app.js"></script>
 </body>
 </html>
