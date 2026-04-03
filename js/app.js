@@ -1,4 +1,4 @@
-﻿const state = {
+const state = {
   currentPage: "home",
   currentRecipe: null,
   recipeSource: "search",
@@ -45,6 +45,10 @@ const headerPrimaryBack = document.getElementById("headerPrimaryBack");
 const headerPrimaryMenu = document.getElementById("headerPrimaryMenu");
 const headerCartButton = document.getElementById("headerCartButton");
 const homeSearchPrompt = document.getElementById("homeSearchPrompt");
+const serviceNotice = document.getElementById("serviceNotice");
+const serviceNoticeTitle = document.getElementById("serviceNoticeTitle");
+const serviceNoticeMessage = document.getElementById("serviceNoticeMessage");
+const serviceNoticeClose = document.getElementById("serviceNoticeClose");
 
 const servingSlider = document.getElementById("servingSlider");
 const servingValue = document.getElementById("servingValue");
@@ -95,6 +99,7 @@ function init() {
 
 function bindEvents() {
   homeSearchPrompt.addEventListener("click", () => navigate("chooser"));
+  serviceNoticeClose?.addEventListener("click", clearServiceNotice);
 
   document.querySelectorAll("[data-home-filter]").forEach((button) => {
     button.addEventListener("click", () => applyHomeFilter(button.dataset.homeFilter));
@@ -412,6 +417,7 @@ async function generateDishPlanAndGo(targetPage) {
 
   try {
     const recipe = await requestGeminiDishPlan({ dishName, servings, allergies });
+    clearServiceNotice();
     state.currentRecipe = recipe;
     state.recipeSource = "search";
     state.cart = buildCartFromRecipe(recipe, allergies);
@@ -419,7 +425,7 @@ async function generateDishPlanAndGo(targetPage) {
     renderCart();
     navigate(targetPage);
   } catch (error) {
-    alert(error?.message || "Could not generate a real recipe right now.");
+    surfaceRequestError(error, "Could not generate a real recipe right now.");
   }
 }
 
@@ -445,12 +451,13 @@ async function generateIngredientSuggestionsAndGo() {
 
   try {
     const suggestions = await requestGeminiIngredientSuggestions(rawIngredients);
+    clearServiceNotice();
     state.ingredientSuggestions = suggestions;
     state.currentSuggestion = suggestions[0] || null;
     renderIngredientSuggestions();
     navigate("ingredient-suggestions");
   } catch (error) {
-    alert(error?.message || "Could not analyze those ingredients right now.");
+    surfaceRequestError(error, "Could not analyze those ingredients right now.");
   }
 }
 
@@ -474,9 +481,7 @@ async function requestGeminiIngredientSuggestions(rawIngredients) {
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload?.fallbackText || payload?.error || (response.status === 404
-      ? "Ingredient suggestion API route was not found on the server."
-      : "Ingredient suggestion generation failed."));
+    throw buildApiError(payload, response.status, "Ingredient suggestion generation failed.");
   }
 
   const suggestions = hydrateRecipeSuggestions(payload?.suggestions, {
@@ -681,6 +686,7 @@ async function analyzeCurrentScanImage() {
 
   try {
     const scanResult = await requestOcrIngredientsFromImage();
+    clearServiceNotice();
     state.scanIngredients = scanResult.ingredients;
     state.scanAnalysisSource = scanResult.source;
     state.scanSuggestions = scanResult.suggestions;
@@ -693,7 +699,7 @@ async function analyzeCurrentScanImage() {
     state.scanSuggestions = [];
     state.currentScanSuggestion = null;
     scanStatusText.textContent = error?.message || "Could not analyze this scan right now.";
-    alert(error?.message || "Could not analyze this scan right now.");
+    surfaceRequestError(error, "Could not analyze this scan right now.");
   }
 }
 
@@ -945,9 +951,7 @@ async function requestGroundedDishRecipe({ dishName, servings, allergies }) {
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload?.fallbackText || payload?.error || (response.status === 404
-      ? "Recipe API route was not found on the server."
-      : "Server recipe generation failed."));
+    throw buildApiError(payload, response.status, "Server recipe generation failed.");
   }
 
   return payload;
@@ -1298,12 +1302,52 @@ async function requestGeminiScanAnalysis() {
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload?.fallbackText || payload?.error || (response.status === 404
-      ? "Scan analysis API route was not found on the server."
-      : "Scan analysis failed."));
+    throw buildApiError(payload, response.status, "Scan analysis failed.");
   }
 
   return payload;
+}
+
+function surfaceRequestError(error, fallbackMessage) {
+  if (error?.isServiceConfigError) {
+    setServiceNotice("AI setup required", error.message);
+  }
+
+  alert(error?.message || fallbackMessage);
+}
+
+function buildApiError(payload, status, fallbackMessage) {
+  const serverMessage = String(payload?.fallbackText || payload?.error || "").trim();
+  const error = new Error(serverMessage || (status === 404
+    ? "The API route was not found on the server."
+    : fallbackMessage));
+
+  error.status = status;
+  error.payload = payload;
+
+  if (status === 503 && /GEMINI_API_KEY|GOOGLE_GEMINI_API_KEY/i.test(serverMessage)) {
+    error.isServiceConfigError = true;
+    error.message = [
+      "Gemini is not configured on Vercel yet.",
+      "Add GEMINI_API_KEY in Project Settings > Environment Variables, then redeploy.",
+    ].join(" ");
+  }
+
+  return error;
+}
+
+function setServiceNotice(title, message) {
+  if (!serviceNotice || !serviceNoticeTitle || !serviceNoticeMessage) {
+    return;
+  }
+
+  serviceNoticeTitle.textContent = String(title || "Service notice");
+  serviceNoticeMessage.textContent = String(message || "");
+  serviceNotice.classList.remove("hidden");
+}
+
+function clearServiceNotice() {
+  serviceNotice?.classList.add("hidden");
 }
 function slugify(value) {
   return String(value)
@@ -1341,28 +1385,3 @@ function safeUrl(value) {
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
